@@ -1,86 +1,126 @@
-.data
-arr: .word 71 27 50 81 34 12 84 41 68 7 57 69 40 51 85 66 63 47 65 61 28 92 80 70 88 98 35 89 54 56 13 30 46 45 64 91 5 86 3 87 2 6 99 11 79 72 14 29 44 60 55 22 26 31 9 43 37 24 52 42 67 83 74 18 10 73 8 20 53 0 96 4 16 82 58 62 15 95 38 76 1 97 75 33 49 21 23 32 36 59 25 17 94 39 48 77 93 90 19 78
-arrS: .word 100
+# A function that implements the quicksort algorithm.
+# Running time complexity:  amortised O(nlogn), worst case: O(n^2)
+# Running space complexity: O(nlogn), worst case: O(n)
+#
+# quicksort(int arr[], int start, int end)
+# Requires: 'start' >= 0
+#           'end' < length(arr)
 
-.macro print_int
-	li a7 1
-	ecall
-.end_macro
-.macro print_array
-	mv a0 s0
-	mv a1 s1
-	call PRINT_ARRAY
-.end_macro
-.macro new_line
-	li a7 11
-	li a0 10
-	ecall
-.end_macro
-.macro space
-	li a7 11
-	li a0 32
-	ecall
-.end_macro
+# MAIN
+addi sp, sp, 1000
+# Store array values in contiguous memory at mem address 0x0:
+# {10, 80, 30, 90, 40, 50, 70}
+ addi a0, x0, 0
 
-.text
-MAIN:
-	la s0 arr	 # s0 = nums.begin()
-	lw s2 arrS   # s2 = nums.size()
-	slli t0 s2 2
-	add s1 s0 t0 # s1 = nums.end()
+ addi t0, x0, 10
+ sw t0, 0(a0) 
+ addi t0, x0, 80
+ sw t0, 4(a0)
+ addi t0, x0, 30
+ sw t0, 8(a0)
+ addi t0, x0, 90
+ sw t0, 12(a0)
+ addi t0, x0, 40
+ sw t0, 16(a0)
+ addi t0, x0, 50
+ sw t0, 20(a0)
+ addi t0, x0, 70
+ sw t0, 24(a0)
 
-    print_array()
+addi a1, x0, 0 # start
+addi a2, x0, 6 # end
 
-    mv s10 zero    # loop counter
-MAIN_LOOP:
-    beq s10 s2 MAIN_DONE
- 	mv a0 s0
- 	mv a1 s1
- 	call ARRAY_PAIRS
+jal ra, QUICKSORT
+jal ra, EXIT
 
-    addi s10 s10 1
-    j MAIN_LOOP
-MAIN_DONE:
-    print_array()
-    j EXIT
+QUICKSORT:
+addi sp, sp, -20
+sw ra, 16(sp)
+sw s3, 12(sp)
+sw s2, 8(sp)
+sw s1, 4(sp)
+sw s0, 0(sp)
 
-# prints all elements of array
-PRINT_ARRAY:
-	mv t0 a0 # t1 = a0 = s.begin()
-	mv t1 a1 # t2 = a1 = s.end()
-PRINT_LOOP:
-	beq t0 t1 PRINT_DONE # if t0 == s.end() -> done
+addi s0, a0, 0
+addi s1, a1, 0
+addi s2, a2, 0
+BLT a2, a1, START_GT_END
 
-	lw t2 0(t0)	   # t2 is *t0
-	mv a0 t2
-	print_int()
-	space()
+jal ra, PARTITION
 
-	addi t0 t0 4   # adds to the iterator
-	j PRINT_LOOP
-PRINT_DONE:
-	new_line()
-	jr ra
+addi s3, a0, 0   # pi
 
-# iterates through array once swapping unordered pairs
-ARRAY_PAIRS:
-	mv t0 a0 # t1 = a0 = s.begin()
-	addi t1 a1 -4  # t2 = a1-4 = s.end()-1
-PAIRS_LOOP:
-	beq t0 t1 PAIRS_DONE # if t0 == s.end() -> done
+addi a0, s0, 0
+addi a1, s1, 0
+addi a2, s3, -1
+jal ra, QUICKSORT  # quicksort(arr, start, pi - 1);
 
-	lw t2 0(t0)	   # t2 is *t0
-	lw t3 4(t0)	   # t2 is *(t0+1)
+addi a0, s0, 0
+addi a1, s3, 1
+addi a2, s2, 0
+jal ra, QUICKSORT  # quicksort(arr, pi + 1, end);
 
-	bgt t3 t2 PAIRS_OK   # if sorted skip swap
-	sw t2 4(t0)
-	sw t3 0(t0)
-PAIRS_OK:
-	addi t0 t0 4   # adds to the iterator
-	j PAIRS_LOOP
-PAIRS_DONE:
-	jr ra
+START_GT_END:
+
+lw s0, 0(sp)
+lw s1, 4(sp)
+lw s2, 8(sp)
+lw s3, 12(sp)
+lw ra, 16(sp)
+addi sp, sp, 20
+jalr x0, ra, 0
+
+PARTITION:
+addi sp, sp, -4
+sw ra, 0(sp)
+
+slli t0, a2, 2   # end * sizeof(int)
+add t0, t0, a0  
+lw t0, 0(t0)     # pivot = arr[end]
+addi t1, a1, -1  # i = (start - 1)
+
+addi t2, a1, 0   # j = start
+LOOP:
+BEQ t2, a2, LOOP_DONE   # while (j < end)
+
+slli t3, t2, 2   # j * sizeof(int)
+add a6, t3, a0   # (arr + j)
+lw t3, 0(a6)     # arr[j]
+
+addi t0, t0, 1   # pivot + 1
+BLT t0, t3, CURR_ELEMENT_GTE_PIVOT  # if (pivot <= arr[j])
+addi t1, t1, 1   # i++
+
+slli t5, t1, 2   # i * sizeof(int)
+add a7, t5, a0   # (arr + i)
+lw t5, 0(a7)     # arr[i]
+
+sw t5, 0(a6)
+sw t3, 0(a7)     # swap(&arr[i], &arr[j])
+
+CURR_ELEMENT_GTE_PIVOT:
+addi t2, t2, 1   # j++
+beq x0, x0, LOOP
+LOOP_DONE:
+
+addi t5, t1, 1   # i + 1
+addi a5, t5, 0   # Save for return value.
+slli t5, t5, 2   # (i + 1) * sizeof(int)
+add a7, t5, a0   # (arr + (i + 1))
+lw t5, 0(a7)     # arr[i + 1]
+
+slli t3, a2, 2   # end * sizeof(int)
+add a6, t3, a0   # (arr + end)
+lw t3, 0(a6)     # arr[end]
+
+sw t5, 0(a6)
+sw t3, 0(a7)     # swap(&arr[i + 1], &arr[end])
+
+addi a0, a5, 0   # return i + 1
+
+lw ra, 0(sp)
+addi sp, sp, 4
+jalr x0, ra, 0
 
 EXIT:
-	li a7 10
-	ecall
+ebreak
