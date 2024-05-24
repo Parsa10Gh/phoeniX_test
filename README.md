@@ -236,20 +236,20 @@ This program serves as an educational example of implementing sorting algorithms
 
 - This RISC-V assembly program calculates the integer square root of a given value (64 in this case) using a simple iterative method. The integer square root of a number ***n*** is the largest integer  ***x***  such that  ***x<sup>2</sup> $\le$ n*** .
 #### Steps:  
-1. ***Load the Value:****  
+1. **Load the Value:**
 - The program starts by loading the value whose integer square root is to be found (64) into the register `a0`.  
   
-**
+
 
 ```
     addi a0, x0, 64
 ```
 
   
-2. **Initialize Variables:****  
+2. **Initialize Variables:**  
 - The guess (`t0`) is initialized to 1.  
   
-**
+
 
 ```
     li t0, 1
@@ -276,7 +276,7 @@ This program serves as an educational example of implementing sorting algorithms
 - When the loop exits, `t0` is the first value for which `t0^2 >= a0`. Therefore, `t0` is decremented by 1 to get the largest `t0` for which `t0^2 < a0`.  
 - The result is stored in `a0`.  
   
-**
+
 
 ```
     end_loop:
