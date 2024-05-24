@@ -230,7 +230,7 @@ This program serves as an educational example of implementing sorting algorithms
 
 - Waveform image
 
-![ineger square root Waveform](https://raw.githubusercontent.com/Parsa10Gh/phoeniX_test/main/integer%20square%20root%20simulation.png)
+![Quick Sort Waveform](https://raw.githubusercontent.com/Parsa10Gh/phoeniX_test/main/QuickSort_Waveform.png)
 
 ### Integer Square Root
 
