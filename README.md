@@ -256,12 +256,11 @@ This program serves as an educational example of implementing sorting algorithms
 ```
 
   
-3. **Loop:****  
+3. **Loop:**
 - The program enters a loop where it squares the current guess and compares it to the value in `a0`.  
 - If the square of the guess is greater than or equal to the value, the loop exits.  
 - Otherwise, the guess is incremented and the loop repeats.  
   
-**
 
 ```
     loop:
@@ -273,7 +272,7 @@ This program serves as an educational example of implementing sorting algorithms
 ```
 
   
-4. **End of Loop:****  
+4. **End of Loop:** 
 - When the loop exits, `t0` is the first value for which `t0^2 >= a0`. Therefore, `t0` is decremented by 1 to get the largest `t0` for which `t0^2 < a0`.  
 - The result is stored in `a0`.  
   
