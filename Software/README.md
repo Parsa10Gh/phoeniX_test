@@ -1,79 +1,82 @@
-Software
-====================
-<div align="justify">
 
-This directory contains source files of sample codes and user codes which will be executed on the phoeniX processor. In this directory, there are three subdirectories included:
-- `Sample_Assembly_Codes`
-- `Sample_C_Codes`
-- `User_Codes`
+Computer Organization - Spring 2024
+==============================================================
+## Iran Univeristy of Science and Technology
+## Assignment 1: Assembly code execution on phoeniX RISC-V core
 
-The code execution and simulation on the phoeniX RISC-V processor follow two distinct branches: one for Linux systems and another for Windows systems.
-</div>
+- Name: Parsa Ghorbani
+- Team Members: AmirMohammad Chamanzari & AmirReza Bakhtaki
+- Student ID: 400413161
+- Date: 24 May 2024
 
-### Linux
+## Report
 
-#### Running Sample Codes
-<div align="justify">
+### Quick Sort
 
-The directory `/Software` contains sample codes for some conventional programs and algorithms in both Assembly and C which can be found in `/Sample_Assembly_Codes` and `/Sample_C_Codes` sub-directories respectively. 
+### Integer Square Root
 
-phoeniX convention for naming projects is as follows; The main source file of the project is named as `{project.c}` or `{project.s}`. This file along other required source files are kept in one directory which has the same name as the project itself, i.e. `/project`.
+- This RISC-V assembly program calculates the integer square root of a given value (64 in this case) using a simple iterative method. The integer square root of a number ***n*** is the largest integer  ***x***  such that  ***x<sup>2</sup> $\le$ n*** .
+#### Steps:  
+1. ***Load the Value:****  
+- The program starts by loading the value whose integer square root is to be found (64) into the register `a0`.  
+  
+**
 
-Sample projects provided at this time are `bubble_sort`, `fibonacci`, `find_max_array`, `sum1ton`.
-To run any of these sample projects simply run `make sample` followed by the name of the project passed as a variable named project to the Makefile.
-```shell
-make sample project={project}
 ```
-For example:
-```shell
-make sample project=fibonacci
+    addi a0, x0, 64
 ```
 
-Provided that the RISC-V toolchain is set up correctly, the Makefile will compile the source codes separately, then using the linker script `riscv.ld` provided in `/Firmware` it links all the object files necessary together and creates `firmware.elf`. It then creates `start.elf` which is built from `start.s` and `start.ld` and concatenate these together and finally forms the `{project}_firmware.hex`. This final file can be directly fed to our verilog testbench. Makefile automatically runs the testbench and calls upon `gtkwave` to display the selected signals in the waveform viewer.
+  
+2. **Initialize Variables:****  
+- The guess (`t0`) is initialized to 1.  
+  
+**
 
-</div>
-
-#### Running Your Own Code
-<div align="justify">
-
-In order to run your own code on phoeniX, create a directory named to your project such as `/my_project` in `/Software/User_Codes/`. Put all your `.c` and `.s` files in `/my_project` and run the following `make` command from the main directory:
-```shell
-make code project=my_project
 ```
-Provided that you name your project sub-directory correctly and the RISC-V Toolchain is configured without any troubles on your machine, the Makefile will compile all your source files separately, then using the linker script `riscv.ld` provided in `/Firmware` it links all the object files necessary together and creates `firmware.elf`. It then creates `start.elf` which is built from `start.s` and `start.ld` and concatenate these together and finally forms the `my_project_firmware.hex`. After that, `iverilog` and `gtkwave` are used to compile the design and view the selected waveforms.
-> Further Configurations
-: The default testbench provided as `phoeniX_Testbench.v` is currently set to support up to 4MBytes of memory and the stack pointer register `sp` is configured accordingly. If you wish to change this, you need configure both the testbench and the initial value the `sp` is set to in `/Firmware/start.s`. If you wish to use other specific libraries and header files not provided in `/Firmware` please beware you may need to change linker scripts `riscv.ld` and `start.ld`.
-</div>
-
-### Windows
-
-#### Running Sample Codes
-<div align="justify">
-
-We have meticulously developed a lightweight and user-friendly software solution with the help of Python. Our execution assistant software, `AssembleX`, has been crafted to cater to the specific needs of Windows systems, enabling seamless execution of assembly code on the phoeniX processor. 
-
-This tool  enhances the efficiency of the code execution process, offering a streamlined experience for users seeking to enter the realm of assembly programming on pheoniX processor in a very simple and user-friendly way.
-
-Before running the script, note that the assembly output of the Venus Simulator for the code must be also saved in the project directory.
-To run any of these sample projects simply run python `AssembleX_V1.0.py sample` followed by the name of the project passed as a variable named project to the Python script.
-The input command format for the terminal follows the structure illustrated below:
-```shell
-python AssembleX_V1.0.py sample {project_name}
+    li t0, 1
 ```
-For example:
-```shell
-python AssembleX_V1.0.py sample fibonacci
-```
-After execution of this script, firmware file will be generated and this final file can be directly fed to our Verilog testbench. AssembleX automatically runs the testbench and calls upon gtkwave to display the selected signals in the waveform viewer application, gtkwave.
-</div>
 
-#### Running Your Own Code
-<div align="justify">
+  
+3. **Loop:****  
+- The program enters a loop where it squares the current guess and compares it to the value in `a0`.  
+- If the square of the guess is greater than or equal to the value, the loop exits.  
+- Otherwise, the guess is incremented and the loop repeats.  
+  
+**
 
-In order to run your own code on phoeniX, create a directory named to your project such as `/my_project in /Software/User_Codes/`. Put all your ``user_code.s` files in my_project and run the following command from the main directory:
-```shell
-python AssembleX_V1.0.py code my_project
 ```
-Provided that you name your project sub-directory correctly the AssembleX software will create `my_project_firmware.hex` and fed it directly to the testbench of phoeniX processor. After that, iverilog and GTKWave are used to compile the design and view the selected waveforms.
-</div>
+    loop:
+        mul t2, t0, t0      # Calculate the square of the guess
+        bge t2, a0, end_loop # If guess squared >= value, exit loop
+
+        addi t0, t0, 1      # Increment guess
+        j loop              # Repeat loop
+```
+
+  
+4. **End of Loop:****  
+- When the loop exits, `t0` is the first value for which `t0^2 >= a0`. Therefore, `t0` is decremented by 1 to get the largest `t0` for which `t0^2 < a0`.  
+- The result is stored in `a0`.  
+  
+**
+
+```
+    end_loop:
+        addi t0, t0, -1  # Decrement guess since the loop exits when t0^2 >= a0
+        sub a0, t0, x0   # Store result (integer square root) in a0
+```
+
+  
+5. **Exit the Program:*** - The program uses `ebreak` to signal the end of execution.  
+
+```
+    ebreak
+```
+
+  
+#### Purpose:  
+This program demonstrates a straightforward method to compute the integer square root by iterative guessing and checking. It incrementally increases the guess until the square of the guess is greater than or equal to the target value, then adjusts to find the correct integer square root. This approach, while not the most efficient for large numbers, is simple and easy to understand.
+- Waveform image
+
+![ineger square root Waveform](https://raw.githubusercontent.com/Parsa10Gh/phoeniX_test/main/integer%20square%20root%20simulation.png)
 
