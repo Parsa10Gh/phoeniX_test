@@ -1,88 +1,118 @@
 # MAIN
 addi sp, sp, 1000
 # Store array values in contiguous memory at mem address 0x0:
-# {1, 5, 3, 4, 10, 22, 2, 3, 44}
+# {10, 80, 30, 90, 40, 50, 70}
  addi a0, x0, 0
 
- addi t0, x0, 1
- sw t0, 0(a0) 
- addi t0, x0, 5
- sw t0, 4(a0)
- addi t0, x0, 3
- sw t0, 8(a0)
- addi t0, x0, 4
- sw t0, 12(a0)
  addi t0, x0, 10
+ sw t0, 0(a0) 
+ addi t0, x0, 80
+ sw t0, 4(a0)
+ addi t0, x0, 30
+ sw t0, 8(a0)
+ addi t0, x0, 90
+ sw t0, 12(a0)
+ addi t0, x0, 40
  sw t0, 16(a0)
- addi t0, x0, 22
+ addi t0, x0, 50
  sw t0, 20(a0)
- addi t0, x0, 2
+ addi t0, x0, 70
  sw t0, 24(a0)
- addi t0, x0, 3
- sw t0, 28(a0)
- addi t0, x0, 44
- sw t0, 32(a0)
 
-addi a1, x0, 9   # size of 'arr'
+addi a1, x0, 0 # start
+addi a2, x0, 6 # end
 
-jal ra, SEL_SORT
+jal ra, QUICKSORT
 jal ra, EXIT
 
-SEL_SORT:
-addi sp, sp, -8
-sw ra, 4(sp)
+QUICKSORT:
+addi sp, sp, -20
+sw ra, 16(sp)
+sw s3, 12(sp)
+sw s2, 8(sp)
+sw s1, 4(sp)
 sw s0, 0(sp)
 
-addi t0, x0, 0 # i
-addi t1, x0, 0 # j
-addi t2, x0, 0 # min_index
+addi s0, a0, 0
+addi s1, a1, 0
+addi s2, a2, 0
+BLT a2, a1, START_GT_END
 
-addi s0, a1, 0 # store n.
-addi a1, a1, -1 # n-1
-UNSORTED_ARRAY_BOUNDARY_LOOP:
-beq t0, a1, END_UNSORTED_ARRAY_BOUNDARY_LOOP # (while i < (n-1))
+jal ra, PARTITION
 
-addi t2, t0, 0   # min_index = i
-addi t1, t0, 1   # j = i + 1
+addi s3, a0, 0   # pi
 
-SUBARRAY_LOOP:   
-beq t1, s0, END_SUBARRAY_LOOP # (while j < n)
+addi a0, s0, 0
+addi a1, s1, 0
+addi a2, s3, -1
+jal ra, QUICKSORT  # quicksort(arr, start, pi - 1);
 
-slli t5, t1, 2  # j * sizeof(int)
-add t6, a0, t5
-lw t4, 0(t6)    # Load arr[j]   
+addi a0, s0, 0
+addi a1, s3, 1
+addi a2, s2, 0
+jal ra, QUICKSORT  # quicksort(arr, pi + 1, end);
 
-slli t5, t2, 2  # min_index * sizeof(int)
-add t6, a0, t5  # arr[min_index]
-lw t3, 0(t6)    # Load arr[min_index] 
-
-blt t3, t4, MIN_REMAINS_SAME # if (arr[min_index] < arr[j]), don't change the min.
-addi t2, t1,0   # min_index = j
-MIN_REMAINS_SAME:
-
-addi t1, t1, 1  # j = j + 1
-beq x0, x0, SUBARRAY_LOOP
-END_SUBARRAY_LOOP:
-
-slli t5, t2, 2    # min_index * sizeof(int)
-add t6, a0, t5    # arr[min_index]
-lw t3, 0(t6)      # Load arr[min_index]  
-
-slli t1, t0, 2    # i * sizeof(int)
-add t1, t1, a0    # arr[i] 
-lw t4, 0(t1)      # Load arr[i]
-
-sw t3, 0(t1)
-sw t4, 0(t6)      # swap(&arr[min_index], &arr[i])
-
-addi t0, t0, 1   # i = i + 1
-beq x0, x0, UNSORTED_ARRAY_BOUNDARY_LOOP
-END_UNSORTED_ARRAY_BOUNDARY_LOOP: 
+START_GT_END:
 
 lw s0, 0(sp)
-lw ra, 4(sp)
-addi sp, sp, 8
+lw s1, 4(sp)
+lw s2, 8(sp)
+lw s3, 12(sp)
+lw ra, 16(sp)
+addi sp, sp, 20
+jalr x0, ra, 0
+
+PARTITION:
+addi sp, sp, -4
+sw ra, 0(sp)
+
+slli t0, a2, 2   # end * sizeof(int)
+add t0, t0, a0  
+lw t0, 0(t0)     # pivot = arr[end]
+addi t1, a1, -1  # i = (start - 1)
+
+addi t2, a1, 0   # j = start
+LOOP:
+BEQ t2, a2, LOOP_DONE   # while (j < end)
+
+slli t3, t2, 2   # j * sizeof(int)
+add a6, t3, a0   # (arr + j)
+lw t3, 0(a6)     # arr[j]
+
+addi t0, t0, 1   # pivot + 1
+BLT t0, t3, CURR_ELEMENT_GTE_PIVOT  # if (pivot <= arr[j])
+addi t1, t1, 1   # i++
+
+slli t5, t1, 2   # i * sizeof(int)
+add a7, t5, a0   # (arr + i)
+lw t5, 0(a7)     # arr[i]
+
+sw t5, 0(a6)
+sw t3, 0(a7)     # swap(&arr[i], &arr[j])
+
+CURR_ELEMENT_GTE_PIVOT:
+addi t2, t2, 1   # j++
+beq x0, x0, LOOP
+LOOP_DONE:
+
+addi t5, t1, 1   # i + 1
+addi a5, t5, 0   # Save for return value.
+slli t5, t5, 2   # (i + 1) * sizeof(int)
+add a7, t5, a0   # (arr + (i + 1))
+lw t5, 0(a7)     # arr[i + 1]
+
+slli t3, a2, 2   # end * sizeof(int)
+add a6, t3, a0   # (arr + end)
+lw t3, 0(a6)     # arr[end]
+
+sw t5, 0(a6)
+sw t3, 0(a7)     # swap(&arr[i + 1], &arr[end])
+
+addi a0, a5, 0   # return i + 1
+
+lw ra, 0(sp)
+addi sp, sp, 4
 jalr x0, ra, 0
 
 EXIT:
-ebreak
+    ebreak
