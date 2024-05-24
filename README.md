@@ -285,7 +285,7 @@ This program serves as an educational example of implementing sorting algorithms
 ```
 
   
-5. **Exit the Program:*** - The program uses `ebreak` to signal the end of execution.  
+5. **Exit the Program:** - The program uses `ebreak` to signal the end of execution.  
 
 ```
     ebreak
